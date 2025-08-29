@@ -16,8 +16,8 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: winespaapi
-          MYSQL_USER: wine
-          MYSQL_PASSWORD: tech
+          MYSQL_USER: root
+          MYSQL_PASSWORD: 1234
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -43,8 +43,8 @@ jobs:
           DJANGO_SETTINGS_MODULE: winespa.settings
           PYTHONPATH: ${{ github.workspace }}
           DB_NAME: winespaapi
-          DB_USER: wine
-          DB_PASSWORD: tech
+          DB_USER: root
+          DB_PASSWORD: 1234
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
 
@@ -58,27 +58,37 @@ jobs:
 
       - name: Configurar permisos de base de datos
         run: |
-          mysql -h 127.0.0.1 -P 3306 -u root -proot -e "
-          GRANT ALL PRIVILEGES ON *.* TO 'wine'@'%' WITH GRANT OPTION;
-          FLUSH PRIVILEGES;
+          mysql -h 127.0.0.1 -P 3306 -u root -p1234 -e "
           CREATE DATABASE IF NOT EXISTS test_winespaapi;
-          GRANT ALL PRIVILEGES ON test_winespaapi.* TO 'wine'@'%';
           FLUSH PRIVILEGES;"
 
       - name: Verificar base de datos de prueba
         run: |
-          mysql -h 127.0.0.1 -P 3306 -u wine -ptech -e "SHOW DATABASES;"
+          mysql -h 127.0.0.1 -P 3306 -u root -p1234 -e "SHOW DATABASES;"
           echo "Base de datos de prueba configurada correctamente"
 
-      - name: Ejecutar pruebas
+      - name: Configurar base de datos Django
         run: |
-          python -m pytest api/tests/ -v
+          python manage.py migrate --run-syncdb
         env:
           DJANGO_SETTINGS_MODULE: winespa.settings
           PYTHONPATH: ${{ github.workspace }}
           DEBUG: "True"
           DB_NAME: winespaapi
-          DB_USER: wine
-          DB_PASSWORD: tech
+          DB_USER: root
+          DB_PASSWORD: 1234
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+
+      - name: Ejecutar pruebas
+        run: |
+          python -m pytest api/tests/ -v --reuse-db --create-db
+        env:
+          DJANGO_SETTINGS_MODULE: winespa.settings
+          PYTHONPATH: ${{ github.workspace }}
+          DEBUG: "True"
+          DB_NAME: winespaapi
+          DB_USER: root
+          DB_PASSWORD: 1234
           DB_HOST: 127.0.0.1
           DB_PORT: 3306

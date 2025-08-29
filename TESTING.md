@@ -44,8 +44,8 @@ El archivo `.github/workflows/test-api.yml` está configurado para:
 
 - `DJANGO_SETTINGS_MODULE`: winespa.settings
 - `DB_NAME`: winespaapi
-- `DB_USER`: wine
-- `DB_PASSWORD`: tech
+- `DB_USER`: root
+- `DB_PASSWORD`: 1234
 - `DB_HOST`: 127.0.0.1
 - `DB_PORT`: 3306
 
