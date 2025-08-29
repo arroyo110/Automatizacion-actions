@@ -37,8 +37,8 @@ El archivo `.github/workflows/test-api.yml` está configurado para:
 1. **Servicios**: MySQL 8.0 como base de datos de prueba
 2. **Python**: Versión 3.10
 3. **Dependencias**: Instalación automática desde `requirements.txt`
-4. **Base de datos**: Configuración automática de permisos y bases de datos de prueba
-5. **Pruebas**: Ejecución automática de pytest
+4. **Base de datos**: MySQL 8.0 con usuario root y contraseña 1234
+5. **Pruebas**: Ejecución automática de pytest con acceso a base de datos
 
 ### Variables de Entorno del Workflow
 
