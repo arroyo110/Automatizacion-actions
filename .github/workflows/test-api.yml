@@ -14,13 +14,11 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: 1234
           MYSQL_DATABASE: winespaapi
-          MYSQL_USER: root
-          MYSQL_PASSWORD: 1234
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping -h localhost -u root -p1234" --health-interval=30s --health-timeout=10s --health-retries=5
 
     steps:
       - name: Descargar código
@@ -50,17 +48,14 @@ jobs:
 
       - name: Esperar MySQL
         run: |
-          while ! mysqladmin ping -h"127.0.0.1" -P3306 --silent; do
-            echo "Esperando MySQL..."
-            sleep 2
-          done
-          echo "MySQL está melo"
+          echo "Esperando que MySQL esté listo..."
+          sleep 30
+          echo "MySQL debería estar listo ahora"
 
-      - name: Configurar permisos de base de datos
+      - name: Verificar conexión MySQL
         run: |
-          mysql -h 127.0.0.1 -P 3306 -u root -p1234 -e "
-          CREATE DATABASE IF NOT EXISTS test_winespaapi;
-          FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -P 3306 -u root -p1234 -e "SELECT VERSION();"
+          echo "Conexión a MySQL exitosa"
 
       - name: Verificar base de datos de prueba
         run: |

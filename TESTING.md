@@ -74,5 +74,5 @@ El archivo `pytest.ini` está configurado para:
 
 - Las pruebas se ejecutan en un entorno Ubuntu con MySQL 8.0
 - Se crea automáticamente una base de datos de prueba `test_winespaapi`
-- El usuario de base de datos `wine` tiene todos los permisos necesarios
-- Las pruebas se ejecutan con el archivo `api/usuarios/test_usuarios.py` por defecto
+- Se usa el usuario `root` con contraseña `1234` para acceso completo a la base de datos
+- Las pruebas se ejecutan en la carpeta `api/tests/` por defecto
