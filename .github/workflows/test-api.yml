@@ -1,0 +1,84 @@
+name: Test API (Python)
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: winespaapi
+          MYSQL_USER: wine
+          MYSQL_PASSWORD: tech
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verificar configuración Django
+        run: |
+          python -c "import django; print('Django version:', django.get_version())"
+        env:
+          DJANGO_SETTINGS_MODULE: winespa.settings
+          PYTHONPATH: ${{ github.workspace }}
+          DB_NAME: winespaapi
+          DB_USER: wine
+          DB_PASSWORD: tech
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+
+      - name: Esperar MySQL
+        run: |
+          while ! mysqladmin ping -h"127.0.0.1" -P3306 --silent; do
+            echo "Esperando MySQL..."
+            sleep 2
+          done
+          echo "MySQL está melo"
+
+      - name: Configurar permisos de base de datos
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -proot -e "
+          GRANT ALL PRIVILEGES ON *.* TO 'wine'@'%' WITH GRANT OPTION;
+          FLUSH PRIVILEGES;
+          CREATE DATABASE IF NOT EXISTS test_winespaapi;
+          GRANT ALL PRIVILEGES ON test_winespaapi.* TO 'wine'@'%';
+          FLUSH PRIVILEGES;"
+
+      - name: Verificar base de datos de prueba
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u wine -ptech -e "SHOW DATABASES;"
+          echo "Base de datos de prueba configurada correctamente"
+
+      - name: Ejecutar pruebas
+        run: |
+          python -m pytest api/usuarios/test_usuarios.py -v
+        env:
+          DJANGO_SETTINGS_MODULE: winespa.settings
+          PYTHONPATH: ${{ github.workspace }}
+          DEBUG: "True"
+          DB_NAME: winespaapi
+          DB_USER: wine
+          DB_PASSWORD: tech
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
