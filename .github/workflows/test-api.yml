@@ -72,7 +72,7 @@ jobs:
 
       - name: Ejecutar pruebas
         run: |
-          python -m pytest api/usuarios/test_usuarios.py -v
+          python -m pytest api/tests/ -v
         env:
           DJANGO_SETTINGS_MODULE: winespa.settings
           PYTHONPATH: ${{ github.workspace }}
